@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <h2>Settings</h2>
+  <form id="settingsForm">
+    <label>PM2.5 Alert Threshold:
+      <input type="number" id="pm25Threshold" min="0">
+    </label>
+    <label>PM10 Alert Threshold:
+      <input type="number" id="pm10Threshold" min="0">
+    </label>
+    <label>CO2 Alert Threshold:
+      <input type="number" id="co2Threshold" min="0">
+    </label>
+    <button type="submit">Save Settings</button>
+  </form>
+
+  <div id="footer"></div>
+  <script src="js/main.js"></script>
+</body>
+</html>

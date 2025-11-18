@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Monitoring</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="header"></div>
+
+  <h2>Live Sensor Data</h2>
+  <div class="live-metrics">
+    <div>PM2.5: <span id="pm25-live">--</span></div>
+    <div>PM10: <span id="pm10-live">--</span></div>
+    <div>CO2: <span id="co2-live">--</span></div>
+    <div>AQI: <span id="aqi-live">--</span></div>
+  </div>
+
+  <canvas id="liveChart" width="400" height="200"></canvas>
+
+  <div id="footer"></div>
+  <script src="js/chart.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
