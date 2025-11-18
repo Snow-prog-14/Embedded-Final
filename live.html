@@ -5,19 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Monitoring</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div id="header"></div>
 
-  <h2>Live Sensor Data</h2>
-  <div class="live-metrics">
-    <div>PM2.5: <span id="pm25-live">--</span></div>
-    <div>PM10: <span id="pm10-live">--</span></div>
-    <div>CO2: <span id="co2-live">--</span></div>
-    <div>AQI: <span id="aqi-live">--</span></div>
+  <h2>Live Air Quality</h2>
+
+  <div class="live-cards">
+    <div class="live-card">
+      <p>PM2.5</p>
+      <span id="pm25-live">--</span> µg/m³
+    </div>
+    <div class="live-card">
+      <p>PM10</p>
+      <span id="pm10-live">--</span> µg/m³
+    </div>
+    <div class="live-card">
+      <p>CO2</p>
+      <span id="co2-live">--</span> ppm
+    </div>
+    <div class="live-card aqi-card">
+      <p>AQI</p>
+      <span id="aqi-live">--</span>
+    </div>
   </div>
 
-  <canvas id="liveChart" width="400" height="200"></canvas>
+  <div class="chart-container">
+    <canvas id="liveChart"></canvas>
+  </div>
 
   <div id="footer"></div>
   <script src="js/chart.js"></script>
