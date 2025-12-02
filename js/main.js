@@ -1,3 +1,7 @@
+// Global for forecast chart instance
+let forecastChart = null;
+
+// Load header/footer components
 function loadComponent(id, url) {
   fetch(url)
     .then(res => res.text())
@@ -7,7 +11,7 @@ function loadComponent(id, url) {
 
       el.innerHTML = data;
 
-      // Special behavior once header is loaded
+      // When header has been injected, apply header specific logic
       if (id === "header") {
         handleHeaderBehavior();
       }
@@ -15,8 +19,10 @@ function loadComponent(id, url) {
     .catch(err => console.error("Error loading " + url + ":", err));
 }
 
+// Hide nav on dashboard and handle active state later if needed
 function handleHeaderBehavior() {
   const path = window.location.pathname;
+
   const isDashboard =
     path.endsWith("index.html") ||
     path === "/" ||
@@ -29,151 +35,176 @@ function handleHeaderBehavior() {
   }
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
-  // Header and footer
+  // Shared header and footer
   loadComponent("header", "components/header.html");
   loadComponent("footer", "components/footer.html");
 
-  // Connection status (used on live page)
+  // Connection status (used on Live page)
   const status = document.getElementById("connectionStatus");
   if (status) {
     setTimeout(() => {
-      status.textContent = "Connected to Raspberry Pi";
+      status.textContent = "Status: Connected";
     }, 1000);
   }
 
-  // Forecast table (used on dashboard)
-  if (document.getElementById("forecastTable")) {
-    loadForecast();
+  // Dashboard: forecast chart setup
+  const chartCanvas = document.getElementById("forecastChart");
+  if (chartCanvas) {
+    initForecastChart(chartCanvas);
+
+    const applyBtn = document.getElementById("applyForecast");
+    if (applyBtn) {
+      applyBtn.addEventListener("click", () => {
+        const amountInput = document.getElementById("forecastAmount");
+        const unitSelect = document.getElementById("forecastUnit");
+        const amount = parseInt(amountInput.value, 10) || 60;
+        const unit = unitSelect.value || "minutes";
+        updateForecastForDuration(amount, unit);
+      });
+    }
+
+    // Initial chart for default 60 minutes
+    updateForecastForDuration(60, "minutes");
   }
 });
 
-// AQI color coding for live page
+// AQI color coding for cards
 function updateAQI(aqi) {
-  const aqiSpan = document.getElementById("aqi-live");
+  const aqiSpan =
+    document.getElementById("aqi-live") || document.getElementById("aqi");
   if (!aqiSpan) return;
 
-  const aqiCard = aqiSpan.parentElement;
+  const card = aqiSpan.closest(".card") || aqiSpan.parentElement;
   aqiSpan.textContent = aqi;
 
-  if (aqi <= 50) aqiCard.style.color = "green";
-  else if (aqi <= 100) aqiCard.style.color = "yellow";
-  else if (aqi <= 150) aqiCard.style.color = "orange";
-  else if (aqi <= 200) aqiCard.style.color = "red";
-  else if (aqi <= 300) aqiCard.style.color = "purple";
-  else aqiCard.style.color = "maroon";
+  if (!card) return;
+
+  if (aqi <= 50) card.style.color = "lightgreen";
+  else if (aqi <= 100) card.style.color = "yellow";
+  else if (aqi <= 150) card.style.color = "orange";
+  else if (aqi <= 200) card.style.color = "red";
+  else if (aqi <= 300) card.style.color = "violet";
+  else card.style.color = "maroon";
 }
 
-/* ---------- Forecast helpers for dashboard ---------- */
+/* -------------------------------------------------
+   Forecast chart (front end only for now)
+------------------------------------------------- */
 
-function loadForecast() {
-  const tbody = document.querySelector("#forecastTable tbody");
-  if (!tbody) return;
-
-  // Clear any placeholder rows first
-  tbody.innerHTML = "";
-
-  // Replace this with your real backend route if different
-  fetch("/api/forecast")
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("HTTP " + res.status);
-      }
-      return res.json();
-    })
-    .then(data => {
-      renderForecast(data);
-    })
-    .catch(err => {
-      console.error("Error loading forecast:", err);
-      renderForecastPlaceholder();
-    });
-}
-
-function renderForecast(forecastData) {
-  const tbody = document.querySelector("#forecastTable tbody");
-  if (!tbody) return;
-
-  // If the backend returned something unexpected, keep the UI useful
-  if (!Array.isArray(forecastData) || forecastData.length === 0) {
-    renderForecastPlaceholder();
+function initForecastChart(canvas) {
+  if (!window.Chart) {
+    console.warn("Chart.js not loaded");
     return;
   }
 
-  tbody.innerHTML = "";
+  const ctx = canvas.getContext("2d");
 
-  // Expected structure:
-  // [
-  //   { time: "2025-12-02T13:00:00Z", pm25: 12, pm10: 25, co2: 410, aqi: 35 },
-  //   ...
-  // ]
-  forecastData.forEach(item => {
-    const tr = document.createElement("tr");
-
-    const timeCell = document.createElement("td");
-    const pm25Cell = document.createElement("td");
-    const pm10Cell = document.createElement("td");
-    const co2Cell = document.createElement("td");
-    const aqiCell = document.createElement("td");
-
-    timeCell.textContent = formatForecastTime(item.time);
-    pm25Cell.textContent = item.pm25 != null ? item.pm25 : "--";
-    pm10Cell.textContent = item.pm10 != null ? item.pm10 : "--";
-    co2Cell.textContent = item.co2 != null ? item.co2 : "--";
-    aqiCell.textContent = item.aqi != null ? item.aqi : "--";
-
-    tr.appendChild(timeCell);
-    tr.appendChild(pm25Cell);
-    tr.appendChild(pm10Cell);
-    tr.appendChild(co2Cell);
-    tr.appendChild(aqiCell);
-
-    tbody.appendChild(tr);
+  forecastChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "AQI",
+          data: [],
+          borderWidth: 2,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "rgba(55,65,81,0.45)" }
+        },
+        y: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "rgba(55,65,81,0.45)" }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: { color: "#e5e7eb" }
+        }
+      }
+    }
   });
 }
 
-function formatForecastTime(rawTime) {
-  if (!rawTime) return "--";
+// For now this generates fake data on the front end
+// Later you can replace the contents with a fetch to your forecast API
+function updateForecastForDuration(amount, unit) {
+  if (!forecastChart) return;
 
-  const date = new Date(rawTime);
-  if (isNaN(date.getTime())) {
-    // If the backend already sends something like "Next hour"
-    return rawTime;
+  const points = 12; // number of points in the forecast line
+  const labels = [];
+  const aqiValues = [];
+
+  // Simple fake curve: start around 40 and wander slightly,
+  // scaled by the amount to look different for different durations.
+  let value = 40;
+  const step = Math.max(1, Math.round(amount / points));
+
+  for (let i = 0; i < points; i++) {
+    labels.push(step * i + " " + (unit === "hours" ? "h" : "min"));
+    value += (Math.random() - 0.5) * 8;
+    value = Math.max(0, Math.min(300, value));
+    aqiValues.push(Math.round(value));
   }
 
-  // Local friendly time, for example "Dec 02, 01:00 PM"
-  return date.toLocaleString(undefined, {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+  forecastChart.data.labels = labels;
+  forecastChart.data.datasets[0].data = aqiValues;
+  forecastChart.update();
+
+  // Show last value as summary AQI for the period
+  const last = aqiValues[aqiValues.length - 1];
+  const summary = document.getElementById("aqiSummary");
+  if (summary) {
+    summary.textContent = last;
+  }
 }
 
-function renderForecastPlaceholder() {
-  const tbody = document.querySelector("#forecastTable tbody");
-  if (!tbody) return;
+/* -------------------------------------------------
+   Helpers for live data hookup later
+------------------------------------------------- */
 
-  tbody.innerHTML = "";
+function updateDashboardFromReading(reading) {
+  if (!reading || typeof reading !== "object") return;
 
-  const placeholders = [
-    "Next hour",
-    "In 2 hours",
-    "In 3 hours"
-  ];
+  setSpanText("pm25", reading.pm25);
+  setSpanText("pm10", reading.pm10);
+  setSpanText("co2", reading.co2);
+  setSpanText("temp", reading.temperature);
+  setSpanText("humidity", reading.humidity);
+  setSpanText("aqi", reading.aqi);
 
-  placeholders.forEach(label => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${label}</td>
-      <td>--</td>
-      <td>--</td>
-      <td>--</td>
-      <td>--</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
+  if (reading.aqi != null) {
+    updateAQI(reading.aqi);
+    const summary = document.getElementById("aqiSummary");
+    if (summary) summary.textContent = reading.aqi;
+  }
 }
+
+function setSpanText(id, value) {
+  const span = document.getElementById(id);
+  if (!span) return;
+
+  if (value == null || value === "") {
+    span.textContent = "--";
+  } else {
+    span.textContent = value;
+  }
+}
+
+// You can later call updateDashboardFromReading({
+//   pm25: 12,
+//   pm10: 25,
+//   co2: 420,
+//   temperature: 28,
+//   humidity: 65,
+//   aqi: 42
+// });

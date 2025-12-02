@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Air Pollution Monitoring - Dashboard</title>
+  <title>Barangay Ugong - Air Quality Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js for the forecast line graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div id="header"></div>
@@ -15,7 +17,7 @@
       <div class="card">
         <span class="label">PM2.5</span>
         <span class="value">
-          <span id="pm25">--</span>
+          <span id="pm25">- -</span>
           <span class="unit">µg/m³</span>
         </span>
       </div>
@@ -23,7 +25,7 @@
       <div class="card">
         <span class="label">PM10</span>
         <span class="value">
-          <span id="pm10">--</span>
+          <span id="pm10">- -</span>
           <span class="unit">µg/m³</span>
         </span>
       </div>
@@ -31,71 +33,82 @@
       <div class="card">
         <span class="label">CO₂</span>
         <span class="value">
-          <span id="co2">--</span>
+          <span id="co2">- -</span>
           <span class="unit">ppm</span>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="label">Temperature</span>
+        <span class="value">
+          <span id="temp">- -</span>
+          <span class="unit">°C</span>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="label">Humidity</span>
+        <span class="value">
+          <span id="humidity">- -</span>
+          <span class="unit">%</span>
         </span>
       </div>
 
       <div class="card">
         <span class="label">AQI</span>
         <span class="value">
-          <span id="aqi">--</span>
+          <span id="aqi">- -</span>
         </span>
       </div>
     </section>
 
-    <!-- Forecast -->
+    <!-- Forecast with user defined duration and line chart -->
     <section class="forecast">
       <header class="forecast-header">
         <div>
           <h2>Air Quality Forecast</h2>
           <p class="forecast-subtitle">
-            Upcoming levels based on sensor trends or forecast data.
+            Forecast based on the duration you choose.
           </p>
+        </div>
+
+        <div class="aqi-summary">
+          <span class="aqi-summary-label">Air Quality Index over selected period</span>
+          <span class="aqi-summary-value" id="aqiSummary">- -</span>
         </div>
       </header>
 
-      <div class="forecast-table-wrapper">
-        <table id="forecastTable">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>PM2.5 (µg/m³)</th>
-              <th>PM10 (µg/m³)</th>
-              <th>CO₂ (ppm)</th>
-              <th>AQI</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Next hour</td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-            </tr>
-            <tr>
-              <td>In 2 hours</td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-            </tr>
-            <tr>
-              <td>In 3 hours</td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- User forecast controls -->
+      <form id="forecastControls" class="forecast-controls">
+        <label>
+          Duration
+          <input type="number" id="forecastAmount" min="10" max="240" value="60">
+        </label>
+
+        <label>
+          Unit
+          <select id="forecastUnit">
+            <option value="minutes" selected>Minutes</option>
+            <option value="hours">Hours</option>
+          </select>
+        </label>
+
+        <button type="button" id="applyForecast">Apply</button>
+      </form>
+
+    <div class="aqi-chart-box">
+  <div class="forecast-chart-wrap">
+    <canvas id="forecastChart"></canvas>
+  </div>
+
+
+</div>
+
     </section>
 
     <!-- Links to other pages -->
     <section class="links">
-      <a href="live.html">Live Monitoring</a>
+      <a href="live.html">Live monitoring</a>
       <a href="history.html">History</a>
       <a href="alerts.html">Alerts</a>
       <a href="settings.html">Settings</a>
