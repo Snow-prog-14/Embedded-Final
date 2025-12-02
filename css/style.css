@@ -1,3 +1,19 @@
 @import url("base.css");
 @import url("layout.css");
 @import url("components.css");
+#statusText {
+  white-space: nowrap;
+  display: inline-block;
+}
+.card .value {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;   /* allow the text to expand */
+}
+.card .value span {
+  overflow: visible;
+}
+.card {
+  min-width: 140px;
+}

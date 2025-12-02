@@ -46,7 +46,23 @@
   display: flex;
   align-items: baseline;
   gap: 0.3rem;
+  position: relative;     /* required for layering */
+  overflow: visible;      /* prevent clipping */
 }
+
+/* --- IMPORTANT FIX: ensure text is above the blurred pill overlay --- */
+.card .value::before,
+.card .value::after {
+  z-index: 0 !important;
+}
+
+.card .value span {
+  position: relative;
+  z-index: 2 !important;
+  white-space: nowrap;
+}
+
+/* END FIX */
 
 .card .value span:first-child {
   font-size: 1.4rem;
@@ -201,24 +217,12 @@
 
 /* Legend colors */
 
-.dot-aqi {
-  background: #22c55e;
-}
-.dot-pm25 {
-  background: #0ea5e9;
-}
-.dot-pm10 {
-  background: #6366f1;
-}
-.dot-co2 {
-  background: #a855f7;
-}
-.dot-temp {
-  background: #f97316;
-}
-.dot-humidity {
-  background: #38bdf8;
-}
+.dot-aqi { background: #22c55e; }
+.dot-pm25 { background: #0ea5e9; }
+.dot-pm10 { background: #6366f1; }
+.dot-co2 { background: #a855f7; }
+.dot-temp { background: #f97316; }
+.dot-humidity { background: #38bdf8; }
 
 /* Live page cards */
 
@@ -336,17 +340,9 @@
   color: #f97316;
 }
 
-.status-ok {
-  color: #4ade80;
-}
-
-.status-warn {
-  color: #facc15;
-}
-
-.status-error {
-  color: #f97373;
-}
+.status-ok { color: #4ade80; }
+.status-warn { color: #facc15; }
+.status-error { color: #f97373; }
 
 .pulse {
   animation: pulseStatus 1s ease-in-out infinite;
