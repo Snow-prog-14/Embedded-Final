@@ -40,12 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadComponent("header", "components/header.html");
   loadComponent("footer", "components/footer.html");
 
-  // Connection status (used on Live page)
+  // Connection status is now controlled by the real backend
+  // Hardware dev can update #connectionStatus directly from JS or API
   const status = document.getElementById("connectionStatus");
   if (status) {
-    setTimeout(() => {
-      status.textContent = "Status: Connected";
-    }, 1000);
+    status.textContent = "Status: Waiting for sensor...";
   }
 
   // Dashboard: forecast chart setup
@@ -53,18 +52,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (chartCanvas) {
     initForecastChart(chartCanvas);
 
-const applyBtn = document.getElementById("applyForecast");
-if (applyBtn) {
-  applyBtn.addEventListener("click", () => {
-    const amountInput = document.getElementById("forecastAmount");
-    const amount = parseInt(amountInput.value, 10) || 60;
-    updateForecastForDuration(amount);
-  });
-}
+    const applyBtn = document.getElementById("applyForecast");
+    if (applyBtn) {
+      applyBtn.addEventListener("click", () => {
+        const amountInput = document.getElementById("forecastAmount");
+        const amount = parseInt(amountInput.value, 10) || 60;
 
-
-    // Initial chart for default 60 minutes
-    updateForecastForDuration(60, "minutes");
+        // TODO hardware dev:
+        // fetch forecast data for "amount" minutes from your API,
+        // then call setForecastData(labelsArray, aqiArray)
+        // For now this just clears the chart
+        clearForecastChart();
+      });
+    }
   }
 });
 
@@ -104,7 +104,7 @@ function updateStatusFromAQI(aqi) {
   el.textContent = status;
 }
 
-/* Forecast chart (front end only for now) */
+/* Forecast chart setup */
 
 function initForecastChart(canvas) {
   if (!window.Chart) {
@@ -149,38 +149,42 @@ function initForecastChart(canvas) {
   });
 }
 
-function updateForecastForDuration(amount) {
+/**
+ * Hardware dev should call this after getting real forecast data.
+ * 
+ * @param {string[]} labels - x axis labels, for example ["0 min","10 min","20 min"]
+ * @param {number[]} aqiValues - same length as labels
+ */
+function setForecastData(labels, aqiValues) {
   if (!forecastChart) return;
-
-  const points = 12;
-  const labels = [];
-  const aqiValues = [];
-
-  let value = 40;
-  const step = Math.max(1, Math.round(amount / points));
-
-  for (let i = 0; i < points; i++) {
-    labels.push(step * i + " min");
-    value += (Math.random() - 0.5) * 8;
-    value = Math.max(0, Math.min(300, value));
-    aqiValues.push(Math.round(value));
-  }
 
   forecastChart.data.labels = labels;
   forecastChart.data.datasets[0].data = aqiValues;
   forecastChart.update();
 
-  const last = aqiValues[aqiValues.length - 1];
-  const summary = document.getElementById("aqiSummary");
-  if (summary) {
-    summary.textContent = last;
+  if (aqiValues.length > 0) {
+    const last = aqiValues[aqiValues.length - 1];
+    const summary = document.getElementById("aqiSummary");
+    if (summary) summary.textContent = last;
+    updateStatusFromAQI(last);
   }
-
-  updateStatusFromAQI(last);
 }
 
+/**
+ * Called when there is no forecast yet or on Apply before data arrives
+ */
+function clearForecastChart() {
+  if (!forecastChart) return;
 
-/* Helpers for live data hookup later */
+  forecastChart.data.labels = [];
+  forecastChart.data.datasets[0].data = [];
+  forecastChart.update();
+
+  const summary = document.getElementById("aqiSummary");
+  if (summary) summary.textContent = "--";
+}
+
+/* Helpers for live data hookup */
 
 function updateDashboardFromReading(reading) {
   if (!reading || typeof reading !== "object") return;
@@ -210,13 +214,3 @@ function setSpanText(id, value) {
     span.textContent = value;
   }
 }
-
-// Example of how you could manually test:
-// updateDashboardFromReading({
-//   pm25: 12,
-//   pm10: 25,
-//   co2: 420,
-//   temperature: 28,
-//   humidity: 65,
-//   aqi: 42
-// });
