@@ -13,60 +13,60 @@
 
   <main>
     <!-- Snapshot cards -->
-    <section class="cards">
-      <div class="card">
-        <span class="label">PM2.5</span>
-        <span class="value">
-          <span id="pm25">--</span>
-          <span class="unit">µg/m³</span>
-        </span>
-      </div>
+<section class="cards cards-row-1">
+  <div class="card">
+    <span class="label">Status</span>
+    <span class="value"><span id="statusText">--</span></span>
+  </div>
 
-      <div class="card">
-        <span class="label">PM10</span>
-        <span class="value">
-          <span id="pm10">--</span>
-          <span class="unit">µg/m³</span>
-        </span>
-      </div>
+  <div class="card">
+    <span class="label">PM2.5</span>
+    <span class="value"><span id="pm25">--</span> <span class="unit">µg/m³</span></span>
+  </div>
 
-      <div class="card">
-        <span class="label">CO₂</span>
-        <span class="value">
-          <span id="co2">--</span>
-          <span class="unit">ppm</span>
-        </span>
-      </div>
+  <div class="card">
+    <span class="label">PM10</span>
+    <span class="value"><span id="pm10">--</span> <span class="unit">µg/m³</span></span>
+  </div>
 
-      <div class="card">
-        <span class="label">Temperature</span>
-        <span class="value">
-          <span id="temp">--</span>
-          <span class="unit">°C</span>
-        </span>
-      </div>
+  <div class="card">
+    <span class="label">Temperature</span>
+    <span class="value"><span id="temp">--</span> <span class="unit">°C</span></span>
+  </div>
 
-      <div class="card">
-        <span class="label">Humidity</span>
-        <span class="value">
-          <span id="humidity">--</span>
-          <span class="unit">%</span>
-        </span>
-      </div>
+  <div class="card">
+    <span class="label">Humidity</span>
+    <span class="value"><span id="humidity">--</span> <span class="unit">%</span></span>
+  </div>
+</section>
 
-      <div class="card">
-        <span class="label">AQI</span>
-        <span class="value">
-          <span id="aqi">--</span>
-        </span>
-      </div>
 
-      <div class="card status-card">
-  <span class="label">STATUS</span>
-  <span class="value"><span id="statusText">--</span></span>
-</div>
+<section class="cards cards-row-2">
+  <div class="card">
+    <span class="label">AQI</span>
+    <span class="value"><span id="aqi">--</span></span>
+  </div>
 
-    </section>
+  <div class="card">
+    <span class="label">Toxic</span>
+    <span class="value"><span id="toxic">--</span></span>
+  </div>
+
+  <div class="card">
+    <span class="label">Flame</span>
+    <span class="value"><span id="flame">--</span></span>
+  </div>
+
+  <div class="card">
+    <span class="label">Smoke</span>
+    <span class="value"><span id="smoke">--</span></span>
+  </div>
+
+  <div class="card">
+    <span class="label">VOC</span>
+    <span class="value"><span id="voc">--</span></span>
+  </div>
+</section>
 
     <!-- Forecast with user defined duration and line chart -->
     <section class="forecast">
@@ -106,7 +106,6 @@
 
     <!-- Links to other pages -->
     <section class="links">
-      <a href="live.html">Live monitoring</a>
       <a href="history.html">History</a>
       <a href="alerts.html">Alerts</a>
       <a href="settings.html">Settings</a>

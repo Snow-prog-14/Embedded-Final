@@ -42,6 +42,27 @@
   color: #9ca3af;
 }
 
+.cards-row-1,
+.cards-row-2 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+  .cards-row-1,
+  .cards-row-2 {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+.card .value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
 /* Forecast section */
 
 .forecast {
