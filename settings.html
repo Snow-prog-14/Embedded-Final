@@ -43,13 +43,18 @@
       </label>
     </div>
 
-    <!-- Device Settings -->
+    <!-- Device / API Settings -->
     <div class="settings-card">
       <h2>Device Settings</h2>
 
       <label class="settings-label">
-        Auto-refresh (seconds)
+        Auto refresh (seconds)
         <input type="number" id="refresh" min="2" value="5">
+      </label>
+
+      <label class="settings-label">
+        API URL (sensor endpoint)
+        <input type="text" id="apiUrl" placeholder="/api/sensor/latest">
       </label>
 
       <label class="settings-label">
@@ -63,7 +68,7 @@
 
   </section>
 
-  <button class="settings-save-btn">Save Settings</button>
+  <button class="settings-save-btn" id="settingsSave">Save Settings</button>
 </main>
 
 <div id="footer"></div>
