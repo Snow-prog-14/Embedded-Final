@@ -3,12 +3,32 @@ function loadComponent(id, url) {
     .then(res => res.text())
     .then(data => {
       const el = document.getElementById(id);
-      if (el) {
-        el.innerHTML = data;
+      if (!el) return;
+
+      el.innerHTML = data;
+
+      // Special behavior once header is loaded
+      if (id === "header") {
+        handleHeaderBehavior();
       }
     })
     .catch(err => console.error("Error loading " + url + ":", err));
 }
+
+function handleHeaderBehavior() {
+  const path = window.location.pathname;
+  const isDashboard =
+    path.endsWith("index.html") ||
+    path === "/" ||
+    path.endsWith("/monitor") ||
+    path.endsWith("/monitor/");
+
+  const nav = document.querySelector(".main-nav");
+  if (nav && isDashboard) {
+    nav.style.display = "none";
+  }
+}
+
 
 document.addEventListener("DOMContentLoaded", () => {
   // Header and footer
