@@ -3,25 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Air Quality Dashboard</title>
+  <title>AI Air Pollution Monitoring - Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="header"></div>
 
-  <section class="cards">
-    <div class="card">PM2.5: <span id="pm25">--</span> µg/m³</div>
-    <div class="card">PM10: <span id="pm10">--</span> µg/m³</div>
-    <div class="card">CO2: <span id="co2">--</span> ppm</div>
-    <div class="card">AQI: <span id="aqi">--</span></div>
-  </section>
+  <main>
+    <!-- Snapshot cards -->
+    <section class="cards">
+      <div class="card">
+        <span class="label">PM2.5</span>
+        <span class="value">
+          <span id="pm25">--</span>
+          <span class="unit">µg/m³</span>
+        </span>
+      </div>
 
-  <section class="links">
-    <a href="live.html">Live Monitoring</a>
-    <a href="history.html">History</a>
-    <a href="alerts.html">Alerts</a>
-    <a href="settings.html">Settings</a>
-  </section>
+      <div class="card">
+        <span class="label">PM10</span>
+        <span class="value">
+          <span id="pm10">--</span>
+          <span class="unit">µg/m³</span>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="label">CO₂</span>
+        <span class="value">
+          <span id="co2">--</span>
+          <span class="unit">ppm</span>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="label">AQI</span>
+        <span class="value">
+          <span id="aqi">--</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- Forecast -->
+    <section class="forecast">
+      <header class="forecast-header">
+        <div>
+          <h2>Air Quality Forecast</h2>
+          <p class="forecast-subtitle">
+            Upcoming levels based on sensor trends or forecast data.
+          </p>
+        </div>
+      </header>
+
+      <div class="forecast-table-wrapper">
+        <table id="forecastTable">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>PM2.5 (µg/m³)</th>
+              <th>PM10 (µg/m³)</th>
+              <th>CO₂ (ppm)</th>
+              <th>AQI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Next hour</td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
+            </tr>
+            <tr>
+              <td>In 2 hours</td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
+            </tr>
+            <tr>
+              <td>In 3 hours</td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Links to other pages -->
+    <section class="links">
+      <a href="live.html">Live Monitoring</a>
+      <a href="history.html">History</a>
+      <a href="alerts.html">Alerts</a>
+      <a href="settings.html">Settings</a>
+    </section>
+  </main>
 
   <div id="footer"></div>
   <script src="js/main.js"></script>
