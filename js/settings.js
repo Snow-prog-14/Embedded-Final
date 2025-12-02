@@ -82,7 +82,7 @@ function getApiRoot() {
  * SEND SETTINGS TO BACKEND
  *******************************************************/
 async function sendSettingsToBackend(settings) {
-  const url = getApiRoot() + "/settings";
+  const url = getApiRoot() + "/settings/save";
 
   try {
     const res = await fetch(url, {
