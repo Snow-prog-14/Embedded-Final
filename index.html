@@ -61,12 +61,11 @@
         </span>
       </div>
 
-      <div class="card">
-        <span class="label">Status</span>
-        <span class="value">
-          <span id="statusText">--</span>
-        </span>
-      </div>
+      <div class="card status-card">
+  <span class="label">STATUS</span>
+  <span class="value"><span id="statusText">--</span></span>
+</div>
+
     </section>
 
     <!-- Forecast with user defined duration and line chart -->
@@ -87,21 +86,14 @@
 
       <!-- User forecast controls -->
       <form id="forecastControls" class="forecast-controls">
-        <label>
-          Duration
-          <input type="number" id="forecastAmount" min="10" max="240" value="60">
-        </label>
+      <label>
+        Duration (minutes)
+        <input type="number" id="forecastAmount" min="10" max="240" value="60">
+      </label>
 
-        <label>
-          Unit
-          <select id="forecastUnit">
-            <option value="minutes" selected>Minutes</option>
-            <option value="hours">Hours</option>
-          </select>
-        </label>
+      <button type="button" id="applyForecast">Apply</button>
+    </form>
 
-        <button type="button" id="applyForecast">Apply</button>
-      </form>
 
       <!-- Line chart -->
       <div class="aqi-chart-box">
@@ -109,14 +101,6 @@
           <canvas id="forecastChart"></canvas>
         </div>
 
-        <ul class="aqi-legend">
-          <li><span class="dot dot-aqi"></span>AQI</li>
-          <li><span class="dot dot-pm25"></span>PM2.5</li>
-          <li><span class="dot dot-pm10"></span>PM10</li>
-          <li><span class="dot dot-co2"></span>CO₂</li>
-          <li><span class="dot dot-temp"></span>Temperature</li>
-          <li><span class="dot dot-humidity"></span>Humidity</li>
-        </ul>
       </div>
     </section>
 

@@ -361,3 +361,15 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+.status-card .label {
+  margin-right: 0.6rem; /* add space */
+}
+
+.status-card .value {
+  margin-left: 0.4rem; /* optional extra space */
+}
+
+.status-card .value span {
+  padding-left: 0.20rem; /* tiny gap */
+}

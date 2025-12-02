@@ -53,16 +53,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (chartCanvas) {
     initForecastChart(chartCanvas);
 
-    const applyBtn = document.getElementById("applyForecast");
-    if (applyBtn) {
-      applyBtn.addEventListener("click", () => {
-        const amountInput = document.getElementById("forecastAmount");
-        const unitSelect = document.getElementById("forecastUnit");
-        const amount = parseInt(amountInput.value, 10) || 60;
-        const unit = unitSelect.value || "minutes";
-        updateForecastForDuration(amount, unit);
-      });
-    }
+const applyBtn = document.getElementById("applyForecast");
+if (applyBtn) {
+  applyBtn.addEventListener("click", () => {
+    const amountInput = document.getElementById("forecastAmount");
+    const amount = parseInt(amountInput.value, 10) || 60;
+    updateForecastForDuration(amount);
+  });
+}
+
 
     // Initial chart for default 60 minutes
     updateForecastForDuration(60, "minutes");
@@ -150,21 +149,18 @@ function initForecastChart(canvas) {
   });
 }
 
-// For now this generates fake data on the front end
-// Later you can replace this with a fetch to your forecast API
-function updateForecastForDuration(amount, unit) {
+function updateForecastForDuration(amount) {
   if (!forecastChart) return;
 
-  const points = 12; // number of points in the forecast line
+  const points = 12;
   const labels = [];
   const aqiValues = [];
 
-  // Simple fake curve: start around 40 and wander slightly
   let value = 40;
   const step = Math.max(1, Math.round(amount / points));
 
   for (let i = 0; i < points; i++) {
-    labels.push(step * i + " " + (unit === "hours" ? "h" : "min"));
+    labels.push(step * i + " min");
     value += (Math.random() - 0.5) * 8;
     value = Math.max(0, Math.min(300, value));
     aqiValues.push(Math.round(value));
@@ -174,7 +170,6 @@ function updateForecastForDuration(amount, unit) {
   forecastChart.data.datasets[0].data = aqiValues;
   forecastChart.update();
 
-  // Show last value as summary AQI for the period
   const last = aqiValues[aqiValues.length - 1];
   const summary = document.getElementById("aqiSummary");
   if (summary) {
@@ -183,6 +178,7 @@ function updateForecastForDuration(amount, unit) {
 
   updateStatusFromAQI(last);
 }
+
 
 /* Helpers for live data hookup later */
 
