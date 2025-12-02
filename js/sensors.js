@@ -110,9 +110,46 @@ function updateStatusFromAQI(aqi) {
 
 /* Auto API polling every N seconds from settings */
 
-function startAutoFetch() {
+// Helper: merge local refresh with backend refresh_rate
+async function getSettingsWithBackendRefresh() {
+  // base: from localStorage (apiUrl + default refresh)
+  const local = getSensorSettings(); // { apiUrl, refreshSeconds }
+  let refreshSeconds = local.refreshSeconds;
+  const apiUrl = local.apiUrl;
+
+  try {
+    // derive API root (strip /dashboard etc)
+    const m = apiUrl.match(/^(.*\/api)(?:\/.*)?$/);
+    const apiRoot = m ? m[1] : apiUrl;
+
+    const res = await fetch(apiRoot + "/settings/latest");
+    if (res.ok) {
+      const json = await res.json();
+      if (json.ok && json.settings) {
+        const r = json.settings.refresh_rate;
+        // use DB refresh_rate if valid and > 1 second
+        if (typeof r === "number" && r > 1) {
+          refreshSeconds = r;
+          console.log("Using backend refresh_rate:", refreshSeconds, "s");
+        } else {
+          console.log("Backend refresh_rate missing/invalid, using local:", refreshSeconds, "s");
+        }
+      }
+    } else {
+      console.warn("Failed to fetch settings/latest, status:", res.status);
+    }
+  } catch (e) {
+    console.warn("Error reading refresh_rate from backend, using local:", e);
+  }
+
+  return { apiUrl, refreshSeconds };
+}
+
+async function startAutoFetch() {
   const status = document.getElementById("connectionStatus");
-  const settings = getSensorSettings();
+
+  // get final apiUrl + refreshSeconds (DB overrides local if present)
+  const settings = await getSettingsWithBackendRefresh();
   const intervalMs = settings.refreshSeconds * 1000;
 
   if (autoFetchTimer) clearInterval(autoFetchTimer);
