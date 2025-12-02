@@ -1,3 +1,16 @@
+.forecast-duration {
+  font-size: 1rem;
+  color: #e5e7eb;
+  margin-bottom: 0.8rem;
+}
+
+.forecast-duration span {
+  font-weight: 600;
+  color: #bbf7d0;
+  padding-left: 0.3rem;
+}
+
+
 /* Cards */
 
 .cards {

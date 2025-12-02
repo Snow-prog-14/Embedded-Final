@@ -219,16 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (chartCanvas) {
     initForecastChart(chartCanvas);
 
-    const applyBtn = document.getElementById("applyForecast");
-    if (applyBtn) {
-      applyBtn.addEventListener("click", () => {
-        const amountInput = document.getElementById("forecastAmount");
-        const amount = parseInt(amountInput.value, 10) || 60;
-        clearForecastChart();
-        // Backend should get forecast for amount minutes then call setForecastData
-        console.log("Forecast requested for", amount, "minutes");
-      });
-    }
+   
   }
 
   if (document.getElementById("pm25")) {
@@ -238,7 +229,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startAutoFetch();
   }
+  if (document.getElementById("forecastAmount")) {
+    loadForecastDuration();
+}
+
 });
+
+// Load forecast duration from settings automatically
+function loadForecastDuration() {
+  const amountInput = document.getElementById("forecastAmount");
+  if (!amountInput) return;
+
+  const stored = localStorage.getItem("settingDefaultForecast");
+  const duration = stored ? parseInt(stored, 10) : 60;
+
+
+
+
+  // Backend should fetch forecast here
+  clearForecastChart();
+  // fetch(`/api/forecast?minutes=${duration}`) -> then setForecastData(...)
+}
+
 
 /* Sensor update helpers */
 
