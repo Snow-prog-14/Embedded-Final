@@ -11,7 +11,7 @@ function loadComponent(id, url) {
 
       el.innerHTML = data;
 
-      // When header has been injected, apply header specific logic
+      // When header has been injected, apply header behavior
       if (id === "header") {
         handleHeaderBehavior();
       }
@@ -19,7 +19,7 @@ function loadComponent(id, url) {
     .catch(err => console.error("Error loading " + url + ":", err));
 }
 
-// Hide nav on dashboard and handle active state later if needed
+// Hide nav on dashboard
 function handleHeaderBehavior() {
   const path = window.location.pathname;
 
@@ -88,9 +88,24 @@ function updateAQI(aqi) {
   else card.style.color = "maroon";
 }
 
-/* -------------------------------------------------
-   Forecast chart (front end only for now)
-------------------------------------------------- */
+// Status text based on AQI
+function updateStatusFromAQI(aqi) {
+  const el = document.getElementById("statusText");
+  if (!el) return;
+
+  let status = "Unknown";
+
+  if (aqi <= 50) status = "Good";
+  else if (aqi <= 100) status = "Moderate";
+  else if (aqi <= 150) status = "Unhealthy (Sensitive)";
+  else if (aqi <= 200) status = "Unhealthy";
+  else if (aqi <= 300) status = "Very Unhealthy";
+  else status = "Hazardous";
+
+  el.textContent = status;
+}
+
+/* Forecast chart (front end only for now) */
 
 function initForecastChart(canvas) {
   if (!window.Chart) {
@@ -136,7 +151,7 @@ function initForecastChart(canvas) {
 }
 
 // For now this generates fake data on the front end
-// Later you can replace the contents with a fetch to your forecast API
+// Later you can replace this with a fetch to your forecast API
 function updateForecastForDuration(amount, unit) {
   if (!forecastChart) return;
 
@@ -144,8 +159,7 @@ function updateForecastForDuration(amount, unit) {
   const labels = [];
   const aqiValues = [];
 
-  // Simple fake curve: start around 40 and wander slightly,
-  // scaled by the amount to look different for different durations.
+  // Simple fake curve: start around 40 and wander slightly
   let value = 40;
   const step = Math.max(1, Math.round(amount / points));
 
@@ -166,11 +180,11 @@ function updateForecastForDuration(amount, unit) {
   if (summary) {
     summary.textContent = last;
   }
+
+  updateStatusFromAQI(last);
 }
 
-/* -------------------------------------------------
-   Helpers for live data hookup later
-------------------------------------------------- */
+/* Helpers for live data hookup later */
 
 function updateDashboardFromReading(reading) {
   if (!reading || typeof reading !== "object") return;
@@ -186,6 +200,7 @@ function updateDashboardFromReading(reading) {
     updateAQI(reading.aqi);
     const summary = document.getElementById("aqiSummary");
     if (summary) summary.textContent = reading.aqi;
+    updateStatusFromAQI(reading.aqi);
   }
 }
 
@@ -200,7 +215,8 @@ function setSpanText(id, value) {
   }
 }
 
-// You can later call updateDashboardFromReading({
+// Example of how you could manually test:
+// updateDashboardFromReading({
 //   pm25: 12,
 //   pm10: 25,
 //   co2: 420,

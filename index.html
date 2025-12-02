@@ -17,7 +17,7 @@
       <div class="card">
         <span class="label">PM2.5</span>
         <span class="value">
-          <span id="pm25">- -</span>
+          <span id="pm25">--</span>
           <span class="unit">µg/m³</span>
         </span>
       </div>
@@ -25,7 +25,7 @@
       <div class="card">
         <span class="label">PM10</span>
         <span class="value">
-          <span id="pm10">- -</span>
+          <span id="pm10">--</span>
           <span class="unit">µg/m³</span>
         </span>
       </div>
@@ -33,7 +33,7 @@
       <div class="card">
         <span class="label">CO₂</span>
         <span class="value">
-          <span id="co2">- -</span>
+          <span id="co2">--</span>
           <span class="unit">ppm</span>
         </span>
       </div>
@@ -41,7 +41,7 @@
       <div class="card">
         <span class="label">Temperature</span>
         <span class="value">
-          <span id="temp">- -</span>
+          <span id="temp">--</span>
           <span class="unit">°C</span>
         </span>
       </div>
@@ -49,7 +49,7 @@
       <div class="card">
         <span class="label">Humidity</span>
         <span class="value">
-          <span id="humidity">- -</span>
+          <span id="humidity">--</span>
           <span class="unit">%</span>
         </span>
       </div>
@@ -57,7 +57,14 @@
       <div class="card">
         <span class="label">AQI</span>
         <span class="value">
-          <span id="aqi">- -</span>
+          <span id="aqi">--</span>
+        </span>
+      </div>
+
+      <div class="card">
+        <span class="label">Status</span>
+        <span class="value">
+          <span id="statusText">--</span>
         </span>
       </div>
     </section>
@@ -74,7 +81,7 @@
 
         <div class="aqi-summary">
           <span class="aqi-summary-label">Air Quality Index over selected period</span>
-          <span class="aqi-summary-value" id="aqiSummary">- -</span>
+          <span class="aqi-summary-value" id="aqiSummary">--</span>
         </div>
       </header>
 
@@ -96,14 +103,21 @@
         <button type="button" id="applyForecast">Apply</button>
       </form>
 
-    <div class="aqi-chart-box">
-  <div class="forecast-chart-wrap">
-    <canvas id="forecastChart"></canvas>
-  </div>
+      <!-- Line chart -->
+      <div class="aqi-chart-box">
+        <div class="forecast-chart-wrap">
+          <canvas id="forecastChart"></canvas>
+        </div>
 
-
-</div>
-
+        <ul class="aqi-legend">
+          <li><span class="dot dot-aqi"></span>AQI</li>
+          <li><span class="dot dot-pm25"></span>PM2.5</li>
+          <li><span class="dot dot-pm10"></span>PM10</li>
+          <li><span class="dot dot-co2"></span>CO₂</li>
+          <li><span class="dot dot-temp"></span>Temperature</li>
+          <li><span class="dot dot-humidity"></span>Humidity</li>
+        </ul>
+      </div>
     </section>
 
     <!-- Links to other pages -->

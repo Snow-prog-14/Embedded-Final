@@ -13,9 +13,15 @@ body {
   color: #e5e7eb;
 }
 
-/* --------------------------------------------------
-   TOP HEADER + NAVIGATION
--------------------------------------------------- */
+/* Main container */
+
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+/* Header and navigation */
 
 .top-header {
   width: 100%;
@@ -55,30 +61,6 @@ body {
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
 }
 
-/* Main container */
-
-main {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem 3rem;
-}
-
-/* Header and footer containers loaded from components */
-
-#header {
-  background: #020617;
-  border-bottom: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-#header a {
-  color: #e5e7eb;
-  text-decoration: none;
-}
-
-#header a:hover {
-  color: #22c55e;
-}
-
 #footer {
   background: #020617;
   color: #9ca3af;
@@ -86,21 +68,7 @@ main {
   font-size: 0.85rem;
 }
 
-/* Generic headings */
-
-h1,
-h2,
-h3 {
-  margin: 0;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-h2 {
-  font-size: 1.25rem;
-}
-
-/* Cards update for extra metrics */
+/* Cards */
 
 .cards {
   display: grid;
@@ -109,7 +77,69 @@ h2 {
   margin-bottom: 2rem;
 }
 
-/* Forecast header summary */
+.card {
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card .label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.card .value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.card .value span:first-child {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.card .unit {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Forecast section */
+
+.forecast {
+  background: rgba(15, 23, 42, 0.96);
+  border-radius: 1.5rem;
+  padding: 1.5rem 1.75rem 1.75rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.forecast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.forecast h2 {
+  font-size: 1.2rem;
+}
+
+.forecast-subtitle {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* AQI summary */
 
 .aqi-summary {
   display: flex;
@@ -187,6 +217,20 @@ h2 {
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.25);
 }
 
+.forecast-chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 230px;
+}
+
+.forecast-chart-wrap canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
 /* Legend */
 
 .aqi-legend {
@@ -208,7 +252,7 @@ h2 {
   margin-right: 0.35rem;
 }
 
-/* Colors for each metric */
+/* Colors for each metric in legend */
 
 .dot-aqi {
   background: #22c55e;
@@ -229,114 +273,7 @@ h2 {
   background: #38bdf8;
 }
 
-/* Cards on dashboard and live view */
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-}
-
-.card {
-  background: rgba(15, 23, 42, 0.96);
-  border-radius: 1rem;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card .label {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
-}
-
-.card .value {
-  display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
-}
-
-.card .value span:first-child {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #f9fafb;
-}
-
-.card .unit {
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-/* Forecast section */
-
-.forecast {
-  background: rgba(15, 23, 42, 0.96);
-  border-radius: 1.5rem;
-  padding: 1.5rem 1.75rem 1.75rem;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.forecast-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.forecast h2 {
-  font-size: 1.2rem;
-}
-
-.forecast-subtitle {
-  margin-top: 0.4rem;
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-.forecast-table-wrapper {
-  overflow-x: auto;
-}
-
-/* Tables (forecast and history) */
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-thead {
-  background: rgba(15, 23, 42, 0.98);
-}
-
-th,
-td {
-  padding: 0.6rem 0.75rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(55, 65, 81, 0.7);
-}
-
-th {
-  font-weight: 500;
-  color: #d1d5db;
-}
-
-tbody tr:nth-child(odd) {
-  background: rgba(15, 23, 42, 0.82);
-}
-
-tbody tr:nth-child(even) {
-  background: rgba(15, 23, 42, 0.9);
-}
-
-/* Buttons that link to other pages */
+/* Links section */
 
 .links {
   margin-top: 2.25rem;
@@ -368,11 +305,17 @@ tbody tr:nth-child(even) {
   transform: translateY(-1px);
 }
 
-/* Live page layout */
+/* Live page (basic) */
 
-h2.section-title {
+.section-title {
   margin: 1.5rem 0 0.75rem;
   font-size: 1.2rem;
+  font-weight: 600;
+}
+
+#connectionStatus {
+  font-size: 0.85rem;
+  color: #f97316;
 }
 
 .live-cards {
@@ -403,100 +346,6 @@ h2.section-title {
   color: #f9fafb;
 }
 
-/* Live chart container */
-
-.chart-container {
-  margin-top: 0.5rem;
-  background: rgba(15, 23, 42, 0.96);
-  padding: 1rem 1.25rem 1.25rem;
-  border-radius: 1.25rem;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-/* Alerts page */
-
-#alertsList {
-  list-style: none;
-  padding: 0;
-  margin: 1.25rem 0 1.5rem;
-}
-
-#alertsList li {
-  background: rgba(127, 29, 29, 0.28);
-  border: 1px solid rgba(248, 113, 113, 0.55);
-  color: #fecaca;
-  border-radius: 0.75rem;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.45rem;
-  font-size: 0.9rem;
-}
-
-/* Settings page */
-
-form#settingsForm {
-  margin: 1.5rem 0 2.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  max-width: 420px;
-}
-
-form#settingsForm label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  color: #e5e7eb;
-}
-
-form#settingsForm input[type="number"] {
-  margin-top: 0.3rem;
-  padding: 0.5rem 0.55rem;
-  border-radius: 0.6rem;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.96);
-  color: #e5e7eb;
-  font-size: 0.9rem;
-}
-
-form#settingsForm input[type="number"]:focus {
-  outline: none;
-  border-color: #22c55e;
-  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6);
-}
-
-/* Primary action buttons and clear alerts button */
-
-form#settingsForm button[type="submit"],
-button#clearAlerts {
-  margin-top: 0.5rem;
-  padding: 0.55rem 1.4rem;
-  border-radius: 999px;
-  border: none;
-  background: #22c55e;
-  color: #020617;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-}
-
-form#settingsForm button[type="submit"]:hover,
-button#clearAlerts:hover {
-  background: #4ade80;
-  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.45);
-  transform: translateY(-1px);
-}
-
-/* Connection status text */
-
-#connectionStatus {
-  font-size: 0.85rem;
-  color: #f97316;
-}
-
 /* Small screen tweaks */
 
 @media (max-width: 640px) {
@@ -508,8 +357,7 @@ button#clearAlerts:hover {
     padding: 1.25rem 1.1rem 1.4rem;
   }
 
-  th,
-  td {
-    padding: 0.45rem 0.5rem;
+  .cards {
+    grid-template-columns: 1fr;
   }
 }
