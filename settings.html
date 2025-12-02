@@ -1,57 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings - Barangay Ugong AQ</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div id="header"></div>
 
-  <main>
-    <h2 class="section-title">Settings</h2>
-    <p style="font-size: 0.9rem; color: #9ca3af; margin-bottom: 1rem;">
-      Configure alert thresholds and basic options. These settings will later connect to the backend and database.
-    </p>
+<div id="header"></div>
 
-    <section class="forecast" style="max-width: 480px; margin-top: 0;">
-      <header class="forecast-header">
-        <div>
-          <h2 style="font-size: 1.05rem;">Alert thresholds</h2>
-          <p class="forecast-subtitle">
-            When readings go above these values, alerts will be generated.
-          </p>
-        </div>
-      </header>
+<main>
+  <h1 class="settings-title">Settings</h1>
 
-      <form id="settingsForm">
-        <label>
-          PM2.5 limit (µg/m³)
-          <input type="number" id="pm25Threshold" min="0" value="35">
-        </label>
+  <section class="settings-grid">
 
-        <label>
-          PM10 limit (µg/m³)
-          <input type="number" id="pm10Threshold" min="0" value="50">
-        </label>
+    <!-- Notification Settings -->
+    <div class="settings-card">
+      <h2>Notification Settings</h2>
 
-        <label>
-          CO₂ limit (ppm)
-          <input type="number" id="co2Threshold" min="0" value="1000">
-        </label>
+      <label class="settings-label">
+        Email Address (for alerts)
+        <input type="email" id="notifEmail" placeholder="example@email.com">
+      </label>
 
-        <label>
-          AQI limit
-          <input type="number" id="aqiThreshold" min="0" max="500" value="100">
-        </label>
+      <label class="settings-label">
+        Enable Notifications
+        <select id="notifToggle">
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+      </label>
+    </div>
 
-        <button type="submit">Save settings</button>
-      </form>
-    </section>
-  </main>
+    <!-- Forecast Settings -->
+    <div class="settings-card">
+      <h2>Forecast Settings</h2>
 
-  <div id="footer"></div>
-  <script src="js/main.js"></script>
+      <label class="settings-label">
+        Default Forecast Duration (minutes)
+        <input type="number" id="defaultForecast" min="10" max="240" value="60">
+      </label>
+    </div>
+
+    <!-- Device Settings -->
+    <div class="settings-card">
+      <h2>Device Settings</h2>
+
+      <label class="settings-label">
+        Auto-refresh (seconds)
+        <input type="number" id="refresh" min="2" value="5">
+      </label>
+
+      <label class="settings-label">
+        Theme
+        <select id="themeSelect">
+          <option value="dark" selected>Dark Mode</option>
+          <option value="light">Light Mode</option>
+        </select>
+      </label>
+    </div>
+
+  </section>
+
+  <button class="settings-save-btn">Save Settings</button>
+</main>
+
+<div id="footer"></div>
+
+<script src="js/main.js"></script>
 </body>
 </html>
