@@ -1,7 +1,7 @@
 let apiFailCount = 0;
 let autoFetchTimer = null;
 
-/* Update dashboard cards from backend JSON */
+/* ---------------- Dashboard card updates ---------------- */
 
 function updateDashboardFromReading(reading) {
   if (!reading || typeof reading !== "object") {
@@ -10,9 +10,9 @@ function updateDashboardFromReading(reading) {
   }
 
   console.log("Dashboard reading:", reading);
+
   // Backend JSON fields:
   // aqi, flame, humidity, pm10, pm25, smoke, temperature, toxic, ts, voc
-
   setSpanText("pm25", reading.pm25);
   setSpanText("pm10", reading.pm10);
   setSpanText("temp", reading.temperature);
@@ -64,7 +64,7 @@ function highlightUpdate(id) {
   setTimeout(() => wrapper.classList.remove("value-updated"), 350);
 }
 
-/* AQI color logic */
+/* ---------------- AQI visual helpers ---------------- */
 
 function updateAQI(aqi) {
   const aqiSpan =
@@ -86,8 +86,6 @@ function updateAQI(aqi) {
   else card.style.color = "maroon";
 }
 
-/* Status card text from AQI */
-
 function updateStatusFromAQI(aqi) {
   const el = document.getElementById("statusText");
   if (!el) return;
@@ -108,68 +106,86 @@ function updateStatusFromAQI(aqi) {
   if (wrapper) wrapper.classList.remove("skeleton");
 }
 
-/* Auto API polling every N seconds from settings */
+/* ---------------- API root helpers (mirrors forecast.js style) ---------------- */
 
-// Helper: merge local refresh with backend refresh_rate
-async function getSettingsWithBackendRefresh() {
-  // base: from localStorage (apiUrl + default refresh)
-  const local = getSensorSettings(); // { apiUrl, refreshSeconds }
-  let refreshSeconds = local.refreshSeconds;
-  const apiUrl = local.apiUrl;
+// Use the same API base as forecast.js. If settings.js defined getApiRoot(),
+// we use that so API URL overrides keep working.
+function getApiRootForSensors() {
+  if (typeof getApiRoot === "function") {
+    return getApiRoot();
+  }
+  // fallback if getApiRoot is not available for some reason
+  return "http://192.168.1.48:5000/api";
+}
+
+function getDashboardUrl() {
+  return getApiRootForSensors() + "/dashboard";
+}
+
+async function getDashboardRefreshSeconds() {
+  const apiRoot = getApiRootForSensors();
+  let refreshSeconds = 1; // minimal fallback
 
   try {
-    // derive API root (strip /dashboard etc)
-    const m = apiUrl.match(/^(.*\/api)(?:\/.*)?$/);
-    const apiRoot = m ? m[1] : apiUrl;
-
     const res = await fetch(apiRoot + "/settings/latest");
-    if (res.ok) {
+    if (!res.ok) {
+      console.warn("settings/latest for dashboard status:", res.status);
+    } else {
       const json = await res.json();
+      console.log("settings/latest for dashboard:", json);
       if (json.ok && json.settings) {
         const r = json.settings.refresh_rate;
-        // use DB refresh_rate if valid and > 1 second
-        if (typeof r === "number" && r > 1) {
+        if (typeof r === "number" && !isNaN(r) && r >= 1) {
           refreshSeconds = r;
-          console.log("Using backend refresh_rate:", refreshSeconds, "s");
         } else {
-          console.log("Backend refresh_rate missing/invalid, using local:", refreshSeconds, "s");
+          console.warn("refresh_rate missing/invalid for dashboard, using 1s");
         }
       }
-    } else {
-      console.warn("Failed to fetch settings/latest, status:", res.status);
     }
   } catch (e) {
-    console.warn("Error reading refresh_rate from backend, using local:", e);
+    console.warn("Error fetching refresh_rate for dashboard, using 1s:", e);
   }
 
-  return { apiUrl, refreshSeconds };
+  return refreshSeconds;
 }
+
+/* ---------------- Auto fetch loop (same pattern as forecast.js) ---------------- */
 
 async function startAutoFetch() {
   const status = document.getElementById("connectionStatus");
+  const dashboardUrl = getDashboardUrl();
+  const refreshSeconds = await getDashboardRefreshSeconds();
+  const intervalMs = refreshSeconds * 1000;
 
-  // get final apiUrl + refreshSeconds (DB overrides local if present)
-  const settings = await getSettingsWithBackendRefresh();
-  const intervalMs = settings.refreshSeconds * 1000;
+  console.log(
+    "Dashboard auto fetch from",
+    dashboardUrl,
+    "every",
+    refreshSeconds,
+    "seconds"
+  );
 
-  if (autoFetchTimer) clearInterval(autoFetchTimer);
+  if (autoFetchTimer) {
+    clearInterval(autoFetchTimer);
+    autoFetchTimer = null;
+  }
 
   if (status) {
     status.classList.remove("status-ok", "status-warn", "status-error", "pulse");
     status.textContent =
-      "Connecting to sensor (every " + settings.refreshSeconds + " s)";
+      "Connecting to sensor (every " + refreshSeconds + " s)";
   }
 
-  autoFetchTimer = setInterval(async () => {
+  const fetchOnce = async () => {
     try {
-      console.log("Fetching from API:", settings.apiUrl);
-      const res = await fetch(settings.apiUrl);
-      console.log("Fetch response status:", res.status);
+      console.log("Fetching dashboard:", dashboardUrl);
+      const res = await fetch(dashboardUrl);
+      console.log("Dashboard response status:", res.status);
 
       if (!res.ok) throw new Error("Bad response: " + res.status);
 
       const data = await res.json();
-      console.log("Received JSON:", data);
+      console.log("Dashboard JSON:", data);
       updateDashboardFromReading(data);
 
       apiFailCount = 0;
@@ -194,5 +210,11 @@ async function startAutoFetch() {
         status.textContent = "Reconnecting";
       }
     }
-  }, intervalMs);
+  };
+
+  // First reading immediately (same idea as forecast auto refresh)
+  await fetchOnce();
+
+  // Then repeat by backend controlled interval
+  autoFetchTimer = setInterval(fetchOnce, intervalMs);
 }

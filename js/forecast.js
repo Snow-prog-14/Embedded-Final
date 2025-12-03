@@ -5,12 +5,76 @@ console.log("forecast.js loaded");
 const API_ROOT = "http://192.168.1.48:5000/api";
 
 let forecastChart = null;
+let forecastTimer = null; // interval id for auto refresh
+
+// Minimum error used visually so the bars are visible
+const MIN_VISUAL_ERROR = 0.05;
 
 function formatTime(ts) {
   const d = new Date(ts * 1000);
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
   return hh + ":" + mm;
+}
+
+/*******************************************************
+ * ERROR BAR PLUGIN
+ * Draws vertical error bars for the scatter dataset
+ *******************************************************/
+const errorBarPlugin = {
+  id: "errorBars",
+  afterDatasetsDraw(chart, args, pluginOptions) {
+    const scatterIndex = 1; // dataset index for points plus error
+
+    const ds = chart.data.datasets[scatterIndex];
+    const meta = chart.getDatasetMeta(scatterIndex);
+
+    if (!ds || !meta || !ds.errorValues) return;
+
+    // IMPORTANT: respect legend toggle
+    if (meta.hidden || ds.hidden) return;
+
+    const ctx = chart.ctx;
+    const yScale = chart.scales.y;
+    const color = pluginOptions.color || "#60a5fa";
+    const lineWidth = pluginOptions.lineWidth || 1;
+    const capWidth = pluginOptions.capWidth || 6;
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+
+    meta.data.forEach((elem, i) => {
+      const base = ds.data[i];
+      let err = ds.errorValues[i];
+      if (base == null || err == null || isNaN(base) || isNaN(err)) return;
+
+      // Ensure minimum visual size
+      err = Math.max(err, MIN_VISUAL_ERROR);
+
+      const x = elem.x;
+      const yTop = yScale.getPixelForValue(base + err);
+      const yBottom = yScale.getPixelForValue(base - err);
+
+      ctx.beginPath();
+      // vertical line
+      ctx.moveTo(x, yTop);
+      ctx.lineTo(x, yBottom);
+      // top cap
+      ctx.moveTo(x - capWidth / 2, yTop);
+      ctx.lineTo(x + capWidth / 2, yTop);
+      // bottom cap
+      ctx.moveTo(x - capWidth / 2, yBottom);
+      ctx.lineTo(x + capWidth / 2, yBottom);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+};
+
+if (window.Chart) {
+  Chart.register(errorBarPlugin);
 }
 
 /*******************************************************
@@ -30,23 +94,13 @@ function initForecastChart(canvas) {
   const ctx = canvas.getContext("2d");
 
   forecastChart = new Chart(ctx, {
-    type: "line",        // base type; we will mix scatter+line datasets
+    type: "line", // base type; we mix line + scatter
     data: {
       labels: [],
       datasets: [
         {
-          // predictive AQI as scatter
-          label: "Predicted AQI (scatter)",
-          type: "scatter",
-          data: [],
-          borderWidth: 2,
-          tension: 0.4,
-          pointRadius: 3,
-          pointHoverRadius: 4
-        },
-        {
-          // predictive AQI as line
-          label: "Predicted AQI (line)",
+          // central forecast line
+          label: "AQI Prediction (Line)",
           type: "line",
           data: [],
           borderWidth: 2,
@@ -54,8 +108,17 @@ function initForecastChart(canvas) {
           pointRadius: 0,
           pointHoverRadius: 0,
           hitRadius: 0
+        },
+        {
+          // points used for error bars
+          label: "AQI Prediction (Error Graph)",
+          type: "scatter",
+          data: [],
+          borderWidth: 0,
+          pointRadius: 3.5,
+          pointHoverRadius: 4.5,
+          errorValues: [] // used by plugin
         }
-
       ]
     },
     options: {
@@ -84,6 +147,11 @@ function initForecastChart(canvas) {
               return "AQI: " + (v != null ? v.toFixed(3) : "--");
             }
           }
+        },
+        errorBars: {
+          color: "#60a5fa",
+          lineWidth: 1,
+          capWidth: 8
         }
       }
     }
@@ -91,37 +159,52 @@ function initForecastChart(canvas) {
 }
 
 /*******************************************************
- * UPDATE CHART DATA (used both by loader and Apply logic)
+ * UPDATE CHART DATA
  *******************************************************/
-function setForecastData(labels, lineValues, scatterValues) {
+function setForecastData(labels, lineValues, errorValues) {
   if (!forecastChart) return;
 
-  // Combine both sets to get min and max for axis
-  const allValues = [...lineValues, ...scatterValues].filter(v => v != null);
-
+  // derive y range from line ± error
+  const allValues = [];
+  for (let i = 0; i < lineValues.length; i++) {
+    const v = lineValues[i];
+    if (v == null || isNaN(v)) continue;
+    const e = Math.max(errorValues[i] || 0, MIN_VISUAL_ERROR);
+    allValues.push(v - e, v + e);
+  }
   if (!allValues.length) return;
 
   let minVal = Math.min(...allValues);
   let maxVal = Math.max(...allValues);
 
   if (minVal === maxVal) {
-    minVal -= 0.5;
-    maxVal += 0.5;
+    const mid = minVal;
+    minVal = mid - 0.05;
+    maxVal = mid + 0.05;
   }
 
-  let padding = (maxVal - minVal) * 0.15;
-  if (padding < 0.05) padding = 0.05;
+  let range = maxVal - minVal;
+  if (range < 0.1) {
+    const mid = (maxVal + minVal) / 2;
+    minVal = mid - 0.05;
+    maxVal = mid + 0.05;
+    range = maxVal - minVal;
+  }
+
+  let padding = range * 0.15;
+  if (padding < 0.01) padding = 0.01;
 
   const yMin = minVal - padding;
   const yMax = maxVal + padding;
 
   forecastChart.data.labels = labels;
 
-  // scatter dataset (with margin of error applied)
-  forecastChart.data.datasets[0].data = scatterValues;
+  // line dataset
+  forecastChart.data.datasets[0].data = lineValues;
 
-  // line dataset (true forecast values)
-  forecastChart.data.datasets[1].data = lineValues;
+  // scatter dataset for error bars
+  forecastChart.data.datasets[1].data = lineValues.slice();
+  forecastChart.data.datasets[1].errorValues = errorValues.slice();
 
   forecastChart.options.scales.y.min = yMin;
   forecastChart.options.scales.y.max = yMax;
@@ -136,7 +219,7 @@ function setForecastData(labels, lineValues, scatterValues) {
 }
 
 /*******************************************************
- * CLEAR CHART (used when Apply clicked in main.js)
+ * CLEAR CHART
  *******************************************************/
 function clearForecastChart() {
   if (!forecastChart) return;
@@ -144,6 +227,7 @@ function clearForecastChart() {
   forecastChart.data.labels = [];
   forecastChart.data.datasets[0].data = [];
   forecastChart.data.datasets[1].data = [];
+  forecastChart.data.datasets[1].errorValues = [];
   forecastChart.update();
 
   const summary = document.getElementById("aqiSummary");
@@ -174,34 +258,68 @@ async function loadAqiForecast() {
 
     const labels = forecast.map(p => formatTime(p.ts));
 
-    // Base AQI values for the line
     const lineValues = forecast.map(p => p.aqi);
 
-    // Scatter values with margin of error
-    // Expected backend fields:
-    //   p.error or p.margin  numeric value representing +/- AQI
-    const scatterValues = forecast.map(p => {
-      const base = p.aqi;
-      const margin =
-        typeof p.error === "number"
-          ? p.error
-          : typeof p.margin === "number"
-          ? p.margin
-          : 0;
-
-      // No margin  scatter dot on the line
-      if (!margin) return base;
-
-      // Randomly scatter up or down by the margin
-      const sign = Math.random() < 0.5 ? -1 : 1;
-      return base + sign * margin;
+    const errorValues = forecast.map(p => {
+      if (typeof p.error === "number") return p.error;
+      if (typeof p.margin === "number") return p.margin;
+      return 0;
     });
 
-    setForecastData(labels, lineValues, scatterValues);
+    setForecastData(labels, lineValues, errorValues);
 
   } catch (err) {
     console.error("Forecast error:", err);
   }
+}
+
+/*******************************************************
+ * BACKEND REFRESH RATE FOR FORECAST
+ *******************************************************/
+async function getForecastRefreshSeconds() {
+  let refreshSeconds = 1; // minimal fallback
+
+  try {
+    const res = await fetch(API_ROOT + "/settings/latest");
+    if (res.ok) {
+      const json = await res.json();
+      console.log("settings/latest for forecast:", json);
+      if (json.ok && json.settings) {
+        const r = json.settings.refresh_rate;
+        if (typeof r === "number" && !isNaN(r) && r >= 1) {
+          refreshSeconds = r;
+        } else {
+          console.warn(
+            "Backend refresh_rate missing/invalid for forecast, using 1s"
+          );
+        }
+      }
+    } else {
+      console.warn("settings/latest for forecast failed, status:", res.status);
+    }
+  } catch (e) {
+    console.warn("Error reading refresh_rate for forecast, using 1s:", e);
+  }
+
+  return refreshSeconds;
+}
+
+async function startForecastAutoRefresh() {
+  if (forecastTimer) {
+    clearInterval(forecastTimer);
+    forecastTimer = null;
+  }
+
+  const refreshSeconds = await getForecastRefreshSeconds();
+  const intervalMs = refreshSeconds * 1000;
+
+  console.log("Forecast auto refresh every", refreshSeconds, "seconds");
+
+  // initial load
+  await loadAqiForecast();
+
+  // periodic refresh
+  forecastTimer = setInterval(loadAqiForecast, intervalMs);
 }
 
 /*******************************************************
@@ -211,7 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("forecastChart");
   if (!canvas) return;
 
-  // Ensure chart exists, then fetch forecast
   initForecastChart(canvas);
-  loadAqiForecast();
+  startForecastAutoRefresh();
 });
