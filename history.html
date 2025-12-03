@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>History AQI</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/history.css">
 </head>
 <body>
   <div id="header"></div>
@@ -12,7 +13,7 @@
   <main>
     <h2 class="section-title">History</h2>
     <p style="font-size: 0.9rem; color: #9ca3af; margin-bottom: 1rem;">
-      Browse previous readings by date once the database is connected.
+      Browse previous combined dashboard readings by date.
     </p>
 
     <section class="forecast" style="margin-top: 0;">
@@ -20,23 +21,28 @@
         <div>
           <h2 style="font-size: 1.05rem;">Filter readings</h2>
           <p class="forecast-subtitle">
-            Select a range to view past sensor values.
+            Select a range to view past dashboard values.
           </p>
         </div>
       </header>
 
-      <form id="historyFilter" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
-        <label style="font-size: 0.85rem; color: #e5e7eb;">
+      <form id="historyFilter" class="history-form">
+        <label>
           From
-          <input type="date" id="fromDate" style="margin-top: 0.25rem; padding: 0.35rem 0.45rem; border-radius: 0.6rem; border: 1px solid rgba(148,163,184,0.7); background: rgba(15,23,42,0.96); color: #e5e7eb;">
-        </label>
-        <label style="font-size: 0.85rem; color: #e5e7eb;">
-          To
-          <input type="date" id="toDate" style="margin-top: 0.25rem; padding: 0.35rem 0.45rem; border-radius: 0.6rem; border: 1px solid rgba(148,163,184,0.7); background: rgba(15,23,42,0.96); color: #e5e7eb;">
+          <input type="datetime-local" id="fromDateTime">
         </label>
 
-        <button type="button" id="applyHistoryFilter" style="align-self: flex-end; padding: 0.45rem 1.1rem; border-radius: 999px; border: none; background: #22c55e; color: #020617; font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;">
-          Apply
+        <label>
+          To
+          <input type="datetime-local" id="toDateTime">
+        </label>
+
+        <button type="button" id="showHistoryBtn" class="green-btn">
+          Show History
+        </button>
+
+        <button type="button" id="downloadHistoryBtn" class="blue-btn">
+          Download CSV/XLSX
         </button>
       </form>
 
@@ -45,15 +51,20 @@
           <thead>
             <tr>
               <th>Time</th>
+              <th>AQI</th>
               <th>PM2.5 (µg/m³)</th>
               <th>PM10 (µg/m³)</th>
-              <th>CO₂ (ppm)</th>
-              <th>AQI</th>
+              <th>Temperature (°C)</th>
+              <th>Humidity (%)</th>
+              <th>Toxic index</th>
+              <th>Flammable index</th>
+              <th>Smoke index</th>
+              <th>VOC index</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colspan="5" style="text-align: center; font-size: 0.9rem; color: #9ca3af;">
+              <td colspan="10" style="text-align: center; font-size: 0.9rem; color: #9ca3af;">
                 History will appear here once the backend is connected.
               </td>
             </tr>
@@ -64,10 +75,10 @@
   </main>
 
   <div id="footer"></div>
-<script src="js/settings.js"></script>
-<script src="js/forecast.js"></script>
-<script src="js/sensors.js"></script>
-<script src="js/main.js"></script>
-
+  <script src="js/settings.js"></script>
+  <script src="js/forecast.js"></script>
+  <script src="js/sensors.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/history.js"></script>
 </body>
 </html>
