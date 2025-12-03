@@ -256,15 +256,37 @@ async function loadAqiForecast() {
       return;
     }
 
-    const labels = forecast.map(p => formatTime(p.ts));
+    // -------- ADD CURRENT TIME AS FIRST X-AXIS POINT --------
+    const nowTs = Math.floor(Date.now() / 1000);
 
-    const lineValues = forecast.map(p => p.aqi);
+    const labels = [
+      formatTime(nowTs),
+      ...forecast.map(p => formatTime(p.ts))
+    ];
 
-    const errorValues = forecast.map(p => {
-      if (typeof p.error === "number") return p.error;
-      if (typeof p.margin === "number") return p.margin;
-      return 0;
-    });
+    // -------- ADD CURRENT AQI AS FIRST LINE VALUE --------
+    let currentAqi = null;
+    const aqiEl = document.getElementById("aqi");
+    if (aqiEl && !isNaN(parseFloat(aqiEl.textContent))) {
+      currentAqi = parseFloat(aqiEl.textContent);
+    } else {
+      currentAqi = forecast[0].aqi;
+    }
+
+    const lineValues = [
+      currentAqi,
+      ...forecast.map(p => p.aqi)
+    ];
+
+    // -------- ZERO ERROR FOR CURRENT POINT --------
+    const errorValues = [
+      0,
+      ...forecast.map(p => {
+        if (typeof p.error === "number") return p.error;
+        if (typeof p.margin === "number") return p.margin;
+        return 0;
+      })
+    ];
 
     setForecastData(labels, lineValues, errorValues);
 
@@ -272,6 +294,7 @@ async function loadAqiForecast() {
     console.error("Forecast error:", err);
   }
 }
+
 
 /*******************************************************
  * BACKEND REFRESH RATE FOR FORECAST
