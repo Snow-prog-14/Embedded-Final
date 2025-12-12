@@ -65,3 +65,98 @@
 .btn-download:hover {
   background: #e5e7eb;
 }
+
+/* ---------- Tooltip + level colors for sensor cards ---------- */
+
+.card {
+  position: relative;
+  transition: box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+/* default tooltip style when hovered */
+.card::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -48px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.95);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+  z-index: 40;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* visible only on hover */
+.card:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+/* small caret below tooltip */
+.card:hover::before {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(20,20,20,0.95) transparent transparent transparent;
+  opacity: 1;
+  z-index: 41;
+}
+
+/* level-based appearance on the card itself */
+.card.level-good {
+  box-shadow: 0 8px 30px rgba(34,197,94,0.06);
+  transform: translateY(-2px);
+}
+
+.card.level-moderate {
+  box-shadow: 0 8px 30px rgba(250,204,21,0.06);
+  transform: translateY(-1px);
+}
+
+.card.level-bad {
+  box-shadow: 0 8px 30px rgba(239,68,68,0.10);
+  transform: translateY(0);
+}
+
+/* tooltip color variations so tooltip matches level */
+.card.level-good:hover::after,
+.card.level-good:hover::before {
+  background: rgba(34,197,94,0.95);
+  border-color: rgba(34,197,94,0.95) transparent transparent transparent;
+}
+
+.card.level-moderate:hover::after,
+.card.level-moderate:hover::before {
+  background: rgba(250,204,21,0.95);
+  border-color: rgba(250,204,21,0.95) transparent transparent transparent;
+}
+
+.card.level-bad:hover::after,
+.card.level-bad:hover::before {
+  background: rgba(239,68,68,0.95);
+  border-color: rgba(239,68,68,0.95) transparent transparent transparent;
+}
+
+/* fallback for unknown or empty values */
+.card.level-unknown {
+  box-shadow: 0 6px 18px rgba(99,102,241,0.03);
+}
+
+/* responsive tweak if tooltip would overflow bottom of viewport */
+@media (max-height: 520px) {
+  .card::after { bottom: auto; top: -48px; transform: translateX(-50%) }
+  .card:hover::before { bottom: auto; top: -12px; border-color: transparent transparent rgba(20,20,20,0.95) transparent; }
+}

@@ -218,3 +218,210 @@ async function startAutoFetch() {
   // Then repeat by backend controlled interval
   autoFetchTimer = setInterval(fetchOnce, intervalMs);
 }
+
+// ---------- Sensor tooltips and level coloring ----------
+// Append this to the end of js/sensors.js or a new js/tooltips.js
+// Make sure it runs after the DOM and after your code that updates the numeric values.
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Define tooltip text and evaluation rules per sensor id/label.
+  // Keys should match either the id of the value span (e.g. "pm25") or the label text on the card.
+  const SENSOR_CONFIG = {
+    pm25: {
+      tooltip: 'Good: 0–12 | Moderate: 12.1–35.4 | Bad: 35.5+',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v <= 12) return 'good';
+        if (v <= 35.4) return 'moderate';
+        return 'bad';
+      }
+    },
+    pm10: {
+      tooltip: 'Good: 0–54 | Moderate: 55–154 | Bad: 155+',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v <= 54) return 'good';
+        if (v <= 154) return 'moderate';
+        return 'bad';
+      }
+    },
+    aqi: {
+      tooltip: 'Good: 0–50 | Moderate: 51–100 | Bad: 101+',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v <= 50) return 'good';
+        if (v <= 100) return 'moderate';
+        return 'bad';
+      }
+    },
+    temp: {
+      tooltip: 'Good: 18–26°C | Moderate: 10–17.9°C and 26.1–32°C | Bad: <10°C or >32°C',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v >= 18 && v <= 26) return 'good';
+        if ((v >= 10 && v < 18) || (v > 26 && v <= 32)) return 'moderate';
+        return 'bad';
+      }
+    },
+    humidity: {
+      tooltip: 'Good: 30–50% | Moderate: 20–29% and 51–60% | Bad: <20% or >60%',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v >= 30 && v <= 50) return 'good';
+        if ((v >= 20 && v < 30) || (v > 50 && v <= 60)) return 'moderate';
+        return 'bad';
+      }
+    },
+    toxic: {
+      tooltip: 'Good: 0–50 | Moderate: 51–100 | Bad: 101+',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v <= 50) return 'good';
+        if (v <= 100) return 'moderate';
+        return 'bad';
+      }
+    },
+    flame: {
+      tooltip: 'Good: No flame | Moderate: Unstable | Bad: Flame detected',
+      evaluate(value) {
+        // flame often shows as 0/1 or numeric analog. Treat "1", "true" or > threshold as detected.
+        const raw = String(value).trim().toLowerCase();
+        if (raw === '' || raw === '--') return 'unknown';
+        if (raw === '0' || raw === 'false' || raw === 'no' ) return 'good';
+        if (raw === '1' || raw === 'true' || raw === 'yes') return 'bad';
+        // if numeric analog, treat > 100 as flame
+        const v = parseFloat(value);
+        if (!Number.isNaN(v)) {
+          if (v <= 50) return 'good';
+          if (v <= 200) return 'moderate';
+          return 'bad';
+        }
+        return 'unknown';
+      }
+    },
+    smoke: {
+      tooltip: 'Good: 0–50 | Moderate: 51–100 | Bad: 101+',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v <= 50) return 'good';
+        if (v <= 100) return 'moderate';
+        return 'bad';
+      }
+    },
+    voc: {
+      tooltip: 'Good: 0–220 | Moderate: 221–660 | Bad: 661+',
+      evaluate(value) {
+        const v = parseFloat(value);
+        if (Number.isNaN(v)) return 'unknown';
+        if (v <= 220) return 'good';
+        if (v <= 660) return 'moderate';
+        return 'bad';
+      }
+    },
+    statusText: { // fallback mapping for Status card which uses id "statusText" in index.html
+      tooltip: 'Status indicator. Hover the other sensors for numeric ranges.',
+      evaluate() { return 'unknown'; }
+    }
+  };
+
+  // Helper: normalize label text to a key used above.
+  function labelToKey(label) {
+    return label
+      .toLowerCase()
+      .replace(/[^\w]+/g, '') // remove spaces/punctuation
+      .replace('pm2.5','pm25')
+      .replace('pm25','pm25')
+      .replace('pm10','pm10')
+      .replace('airqualityindex','aqi')
+      .replace('temperature','temp')
+      .replace('humidity','humidity')
+      .replace('toxic','toxic')
+      .replace('flame','flame')
+      .replace('smoke','smoke')
+      .replace('voc','voc')
+      .replace('status','statusText');
+  }
+
+  // Find all cards and attach tooltip text and initial level class
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    // Determine a key from either child span.label text or from value span id
+    let key = null;
+
+    // prefer value id if present
+    const valueSpan = card.querySelector('.value span[id]');
+    if (valueSpan && valueSpan.id) {
+      key = valueSpan.id;
+    } else {
+      const labelEl = card.querySelector('.label');
+      if (labelEl) key = labelToKey(labelEl.textContent || labelEl.innerText || '');
+    }
+
+    // fallback: try label text cleaned
+    if (!key) {
+      const labelText = (card.textContent || '').slice(0, 20);
+      key = labelToKey(labelText);
+    }
+
+    const cfg = SENSOR_CONFIG[key];
+
+    // Attach tooltip text
+    if (cfg && cfg.tooltip) {
+      card.setAttribute('data-tooltip', cfg.tooltip);
+    } else {
+      // default tooltip if we don't know the sensor
+      card.setAttribute('data-tooltip', 'Ranges not configured for this sensor');
+    }
+
+    // Evaluate and style right now
+    function evaluateAndStyle() {
+      // try to read the inner numeric value from a child span with an id or numeric text
+      let rawVal = '--';
+      if (valueSpan && valueSpan.textContent) {
+        rawVal = valueSpan.textContent.trim();
+      } else {
+        // fallback: look for a child .value and take first number-like token
+        const valEl = card.querySelector('.value');
+        if (valEl && valEl.textContent) rawVal = valEl.textContent.trim();
+      }
+
+      // remove unit symbols from the raw value for numeric parsing
+      const cleaned = rawVal.replace(/[^\d.\-+eE]/g, '').trim();
+
+      let level = 'unknown';
+      if (cfg && typeof cfg.evaluate === 'function') {
+        // pass numeric-like or raw text
+        level = cfg.evaluate(cleaned === '' ? rawVal : cleaned) || 'unknown';
+      }
+
+      // remove any prior level classes then add current
+      card.classList.remove('level-good', 'level-moderate', 'level-bad', 'level-unknown');
+      card.classList.add('level-' + level);
+    }
+
+    // run once now
+    evaluateAndStyle();
+
+    // If sensor values update live, observe changes and re-evaluate
+    // Use a MutationObserver on the value span to detect updates
+    if (valueSpan) {
+      const mo = new MutationObserver(() => evaluateAndStyle());
+      mo.observe(valueSpan, { childList: true, subtree: true, characterData: true });
+    } else {
+      // if no id value span but values might update in the .value element, watch it
+      const valEl = card.querySelector('.value');
+      if (valEl) {
+        const mo2 = new MutationObserver(() => evaluateAndStyle());
+        mo2.observe(valEl, { childList: true, subtree: true, characterData: true });
+      }
+    }
+  });
+});
+
