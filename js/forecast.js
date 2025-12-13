@@ -6,6 +6,8 @@ const API_ROOT = "http://192.168.1.48:5000/api";
 
 let forecastChart = null;
 let forecastTimer = null; // interval id for auto refresh
+let historyChart = null;
+let currentAqi = null;
 
 // Minimum error used visually so the bars are visible
 const MIN_VISUAL_ERROR = 0.05;
@@ -157,6 +159,60 @@ function initForecastChart(canvas) {
     }
   });
 }
+/*******************************************************
+ * INITIAL HISTORY CHART (LEFT SIDE)
+ *******************************************************/
+function initHistoryChart(canvas) {
+  if (!window.Chart || !canvas) return;
+
+  if (window.Chart.getChart && window.Chart.getChart(canvas)) return;
+
+  const ctx = canvas.getContext("2d");
+
+  historyChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "AQI History",
+          data: [],
+          borderWidth: 2,
+          tension: 0.4,
+          pointRadius: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "rgba(55,65,81,0.45)" }
+        },
+        y: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "rgba(55,65,81,0.45)" },
+          title: { display: true, text: "AQI" }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+/*******************************************************
+ * UPDATE HISTORY CHART
+ *******************************************************/
+function setHistoryData(labels, values) {
+  if (!historyChart) return;
+
+  historyChart.data.labels = labels;
+  historyChart.data.datasets[0].data = values;
+  historyChart.update();
+}
 
 /*******************************************************
  * UPDATE CHART DATA
@@ -258,14 +314,13 @@ async function loadAqiForecast() {
 
     // -------- ADD CURRENT TIME AS FIRST X-AXIS POINT --------
     const nowTs = Math.floor(Date.now() / 1000);
-
+    // forecast keeps existing behavior
     const labels = [
       formatTime(nowTs),
       ...forecast.map(p => formatTime(p.ts))
     ];
 
     // -------- ADD CURRENT AQI AS FIRST LINE VALUE --------
-    let currentAqi = null;
     const aqiEl = document.getElementById("aqi");
     if (aqiEl && !isNaN(parseFloat(aqiEl.textContent))) {
       currentAqi = parseFloat(aqiEl.textContent);
@@ -292,6 +347,29 @@ async function loadAqiForecast() {
 
   } catch (err) {
     console.error("Forecast error:", err);
+  }
+}
+/*******************************************************
+ * LOAD HISTORY DATA FROM /api/history/chart
+ *******************************************************/
+async function loadAqiHistoryChart() {
+  try {
+    const res = await fetch(API_ROOT + "/history/chart");
+    if (!res.ok) throw new Error("Bad response: " + res.status);
+
+    const json = await res.json();
+    if (!json.ok || !json.data) return;
+
+    const { labels, values } = json.data;
+    if (!labels || !values || labels.length === 0) return;
+
+    const chartLabels = labels.map(ts => formatTime(ts));
+    const chartValues = values.map(v => Number(v));
+
+    setHistoryData(chartLabels, chartValues);
+
+  } catch (err) {
+    console.warn("History chart error:", err);
   }
 }
 
@@ -349,9 +427,14 @@ async function startForecastAutoRefresh() {
  * AUTO-LOAD WHEN DASHBOARD READY
  *******************************************************/
 document.addEventListener("DOMContentLoaded", () => {
-  const canvas = document.getElementById("forecastChart");
-  if (!canvas) return;
+  const forecastCanvas = document.getElementById("forecastChart");
+  const historyCanvas = document.getElementById("historyChart");
 
-  initForecastChart(canvas);
-  startForecastAutoRefresh();
+  if (historyCanvas) initHistoryChart(historyCanvas);
+  if (forecastCanvas) initForecastChart(forecastCanvas);
+
+  if (forecastCanvas) {
+    loadAqiHistoryChart();
+    startForecastAutoRefresh();
+  }
 });

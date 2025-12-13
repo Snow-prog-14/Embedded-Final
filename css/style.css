@@ -160,3 +160,26 @@
   .card::after { bottom: auto; top: -48px; transform: translateX(-50%) }
   .card:hover::before { bottom: auto; top: -12px; border-color: transparent transparent rgba(20,20,20,0.95) transparent; }
 }
+
+.forecast-chart-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: 360px;
+}
+
+.chart-panel {
+  position: relative;
+  background: #0b1220;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.chart-title {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-size: 12px;
+  opacity: 0.7;
+  z-index: 2;
+}

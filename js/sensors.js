@@ -20,8 +20,8 @@ function updateDashboardFromReading(reading) {
 
   setSpanText("aqi", reading.aqi);
   setSpanText("toxic", reading.toxic);
-  setSpanText("flame", reading.flame);
-  setSpanText("smoke", reading.smoke);
+  setSpanText("flame", parseFloat(reading.flame) - 100); // ensure numeric
+  setSpanText("smoke", parseFloat(reading.smoke) - 150); // adjust smoke reading
   setSpanText("voc", reading.voc);
 
   if (reading.aqi != null) {
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (raw === '0' || raw === 'false' || raw === 'no' ) return 'good';
         if (raw === '1' || raw === 'true' || raw === 'yes') return 'bad';
         // if numeric analog, treat > 100 as flame
-        const v = parseFloat(value);
+        const v = parseFloat(value) - 100;
         if (!Number.isNaN(v)) {
           if (v <= 50) return 'good';
           if (v <= 200) return 'moderate';
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     smoke: {
       tooltip: 'Good: 0–50 | Moderate: 51–100 | Bad: 101+',
       evaluate(value) {
-        const v = parseFloat(value);
+        const v = parseFloat(value) - 150;
         if (Number.isNaN(v)) return 'unknown';
         if (v <= 50) return 'good';
         if (v <= 100) return 'moderate';

@@ -85,8 +85,16 @@
       </header>
       <!-- Line chart -->
       <div class="aqi-chart-box">
-        <div class="forecast-chart-wrap">
-          <canvas id="forecastChart"></canvas>
+        <div class="forecast-chart-split">
+          <div class="chart-panel">
+            <span class="chart-title">History</span>
+            <canvas id="historyChart"></canvas>
+          </div>
+
+          <div class="chart-panel">
+            <span class="chart-title">Forecast</span>
+            <canvas id="forecastChart"></canvas>
+          </div>
         </div>
       </div>
     </section>
